@@ -18,8 +18,8 @@ import { ResolveError, YamlParseError } from './resolve';
 import { loadConfig, Config, LintConfig } from './config/config';
 import { NormalizedProblem } from './walk';
 import { previewDocs } from './cli/preview-docs';
+import { handleSplit } from './cli/split-docs';
 import { RedoclyClient } from './redocly';
-
 const version = require('../package.json').version;
 const outputExtensions = ['json', 'yaml', 'yml'] as ReadonlyArray<BundleOutputFormat>;
 const ERROR_MESSAGE = {
@@ -29,6 +29,16 @@ const ERROR_MESSAGE = {
 yargs
   .version('version', 'Show version number.', version)
   .help('help', 'Show help.')
+  .command('split [entrypoint]', 'Split document references into files',
+    (yargs) => yargs
+      .positional('entrypoint', { type: 'string' })
+      .option({ outDir: {
+        description: 'Output directory where files will be saved',
+        required: true,
+        type: 'string'
+      }}),
+    (argv) => { handleSplit(argv) }
+  )
   .command(
     'lint [entrypoints...]',
     'Lint definition.',
