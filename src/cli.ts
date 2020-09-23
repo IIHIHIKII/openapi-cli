@@ -6,6 +6,7 @@ import { performance } from 'perf_hooks';
 import * as glob from 'glob-promise';
 import { validate } from './validate';
 import { bundle } from './bundle';
+import { handleMerge } from './cli/merge-docs';
 import {
   dumpBundle,
   saveBundle,
@@ -29,6 +30,14 @@ const ERROR_MESSAGE = {
 yargs
   .version('version', 'Show version number.', version)
   .help('help', 'Show help.')
+  .command('merge <entrypoints...>', 'Merge definition.',
+    (yargs) => yargs.positional('entrypoints', {
+      array: true,
+      type: 'string',
+      demandOption: true
+    }),
+    async (argv) => { handleMerge(argv, version) }
+  )
   .command(
     'lint [entrypoints...]',
     'Lint definition.',
@@ -383,7 +392,7 @@ function getOutputFileName(
   return { outputFile, ext };
 }
 
-function handleError(e: Error, ref: string) {
+export function handleError(e: Error, ref: string) {
   if (e instanceof ResolveError) {
     process.stderr.write(
       `Failed to resolve entrypoint definition at ${ref}:\n\n  - ${e.message}.\n\n`,
@@ -404,7 +413,7 @@ function handleError(e: Error, ref: string) {
   }
 }
 
-function printLintTotals(totals: Totals, definitionsCount: number) {
+export function printLintTotals(totals: Totals, definitionsCount: number) {
   const ignored = totals.ignored
     ? yellow(`${totals.ignored} ${pluralize('problem is', totals.ignored)} explicitly ignored.\n\n`)
     : '';
